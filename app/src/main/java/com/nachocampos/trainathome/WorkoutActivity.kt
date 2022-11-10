@@ -1,5 +1,7 @@
 package com.nachocampos.trainathome
 
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -24,6 +26,7 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var currentWorkoutPosition = -1
 
     private var textToSpeech: TextToSpeech? = null
+    private var soundPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +54,18 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun setUpRestView(){
+
+        try{
+            val soundURI = Uri.parse(
+                "android.resource://com.nachocampos.trainathome/" + R.raw.press_start
+            )
+            soundPlayer = MediaPlayer.create(applicationContext, soundURI)
+            soundPlayer?.isLooping = false
+            soundPlayer?.start()
+        }catch(e: Exception){
+            e.printStackTrace()
+        }
+
         binding?.flRestView?.visibility = View.VISIBLE
         binding?.tvTitle?.visibility = View.VISIBLE
         binding?.tvWorkoutName?.visibility = View.INVISIBLE
@@ -149,6 +164,10 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         if (textToSpeech != null){
             textToSpeech!!.stop()
             textToSpeech!!.shutdown()
+        }
+
+        if(soundPlayer != null){
+            soundPlayer!!.stop()
         }
 
         binding = null
