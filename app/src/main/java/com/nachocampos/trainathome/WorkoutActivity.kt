@@ -16,6 +16,9 @@ class WorkoutActivity : AppCompatActivity() {
     private var workoutTimer: CountDownTimer? = null
     private var workoutProgress = 0
 
+    private var workoutsList : ArrayList<WorkoutModel>? = null
+    private var currentWorkoutPosition = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWorkoutBinding.inflate(layoutInflater)
@@ -29,6 +32,8 @@ class WorkoutActivity : AppCompatActivity() {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
 
+        workoutsList = Constants.defaultWorkoutList()
+
         // This is to add the functionality of going back to the back button of our activity.
         binding?.toolbarWorkout?.setNavigationOnClickListener{
             onBackPressed()
@@ -38,23 +43,40 @@ class WorkoutActivity : AppCompatActivity() {
     }
 
     private fun setUpRestView(){
+        binding?.flRestView?.visibility = View.VISIBLE
+        binding?.tvTitle?.visibility = View.VISIBLE
+        binding?.tvWorkoutName?.visibility = View.INVISIBLE
+        binding?.ivPicture?.visibility = View.INVISIBLE
+        binding?.flProgressBarWorkout?.visibility = View.INVISIBLE
+        binding?.upcomingLabel?.visibility = View.VISIBLE
+        binding?.tvUpcomingWorkoutName?.visibility = View.VISIBLE
+
+
         if(restTimer != null){
             restTimer?.cancel()
             restProgress = 0
         }
+
+        binding?.tvUpcomingWorkoutName?.text = workoutsList!![currentWorkoutPosition +1].getName()
         setRestProgressBar()
     }
 
     private fun setUpWorkoutView(){
-        binding?.flProgressBar?.visibility = View.INVISIBLE
-        binding?.tvTitle?.text = "Workout name"
+        binding?.flRestView?.visibility = View.INVISIBLE
+        binding?.tvTitle?.visibility = View.INVISIBLE
+        binding?.tvWorkoutName?.visibility = View.VISIBLE
+        binding?.ivPicture?.visibility = View.VISIBLE
         binding?.flProgressBarWorkout?.visibility = View.VISIBLE
+        binding?.upcomingLabel?.visibility = View.INVISIBLE
+        binding?.tvUpcomingWorkoutName?.visibility = View.INVISIBLE
 
         if(workoutTimer != null){
             workoutTimer?.cancel()
             workoutProgress = 0
         }
 
+        binding?.ivPicture?.setImageResource(workoutsList!![currentWorkoutPosition].getPicture())
+        binding?.tvWorkoutName?.text = workoutsList!![currentWorkoutPosition].getName()
         setWorkoutProgressBar()
     }
 
@@ -68,6 +90,7 @@ class WorkoutActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
+                currentWorkoutPosition++
                 setUpWorkoutView()
             }
 
@@ -85,11 +108,15 @@ class WorkoutActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                Toast.makeText(
-                    this@WorkoutActivity,
-                    "30'' over, let's go to the rest view!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if(currentWorkoutPosition < workoutsList?.size!! -1){
+                    setUpRestView()
+                }else{
+                    Toast.makeText(
+                        this@WorkoutActivity,
+                        "Congratulations! You've completed this 7' Workout!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
 
         }.start()
