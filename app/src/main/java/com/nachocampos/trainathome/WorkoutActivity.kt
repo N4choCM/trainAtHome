@@ -3,11 +3,15 @@ package com.nachocampos.trainathome
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.nachocampos.trainathome.databinding.ActivityWorkoutBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
-class WorkoutActivity : AppCompatActivity() {
+class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var binding: ActivityWorkoutBinding? = null
 
     private var restTimer: CountDownTimer? = null
@@ -18,6 +22,8 @@ class WorkoutActivity : AppCompatActivity() {
 
     private var workoutsList : ArrayList<WorkoutModel>? = null
     private var currentWorkoutPosition = -1
+
+    private var textToSpeech: TextToSpeech? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +39,8 @@ class WorkoutActivity : AppCompatActivity() {
         }
 
         workoutsList = Constants.defaultWorkoutList()
+
+        textToSpeech = TextToSpeech(this, this)
 
         // This is to add the functionality of going back to the back button of our activity.
         binding?.toolbarWorkout?.setNavigationOnClickListener{
@@ -74,6 +82,8 @@ class WorkoutActivity : AppCompatActivity() {
             workoutTimer?.cancel()
             workoutProgress = 0
         }
+
+        speakOut(workoutsList!![currentWorkoutPosition].getName())
 
         binding?.ivPicture?.setImageResource(workoutsList!![currentWorkoutPosition].getPicture())
         binding?.tvWorkoutName?.text = workoutsList!![currentWorkoutPosition].getName()
@@ -134,7 +144,32 @@ class WorkoutActivity : AppCompatActivity() {
             workoutTimer?.cancel()
             workoutProgress = 0
         }
+
+        // Shutting down the Text to Speech feature when activity is destroyed
+        if (textToSpeech != null){
+            textToSpeech!!.stop()
+            textToSpeech!!.shutdown()
+        }
+
         binding = null
+    }
+
+    override fun onInit(status: Int) {
+        if(status == TextToSpeech.SUCCESS){
+            // Set Spanish as language for the textToSpeech variable.
+            val result = textToSpeech?.setLanguage(Locale.UK)
+
+            if (result == TextToSpeech.LANG_MISSING_DATA ||
+                    result == TextToSpeech.LANG_NOT_SUPPORTED){
+                Log.e("TextToSpeech", "The required language is not supported.")
+            }
+        }else{
+            Log.e("TextToSpeech", "Fail when initializing TextToSpeech.")
+        }
+    }
+
+    private fun speakOut(text: String){
+        textToSpeech!!.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
     }
 
 }
