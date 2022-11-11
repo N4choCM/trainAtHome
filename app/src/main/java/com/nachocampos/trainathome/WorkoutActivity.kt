@@ -1,5 +1,6 @@
 package com.nachocampos.trainathome
 
+import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
@@ -19,9 +20,12 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private var restTimer: CountDownTimer? = null
     private var restProgress = 0
+    private var restDuration: Long = 1
 
     private var workoutTimer: CountDownTimer? = null
     private var workoutProgress = 0
+    private var workoutDuration: Long = 1
+
 
     private var workoutsList : ArrayList<WorkoutModel>? = null
     private var currentWorkoutPosition = -1
@@ -119,7 +123,7 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun setRestProgressBar(){
         binding?.progressBar?.progress = restProgress
-        restTimer = object: CountDownTimer(5000, 1000){
+        restTimer = object: CountDownTimer(restDuration*1000, 1000){
             override fun onTick(p0: Long) {
                 restProgress++
                 binding?.progressBar?.progress = 5 - restProgress
@@ -139,7 +143,7 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun setWorkoutProgressBar(){
         binding?.progressBarWorkout?.progress = workoutProgress
-        workoutTimer = object: CountDownTimer(30000, 1000){
+        workoutTimer = object: CountDownTimer(workoutDuration*1000, 1000){
             override fun onTick(p0: Long) {
                 workoutProgress++
                 binding?.progressBarWorkout?.progress = 30 - workoutProgress
@@ -148,18 +152,17 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
             override fun onFinish() {
 
-                workoutsList!![currentWorkoutPosition].setIsSelected(false)
-                workoutsList!![currentWorkoutPosition].setIsCompleted(true)
-                workoutAdapter!!.notifyDataSetChanged()
-
                 if(currentWorkoutPosition < workoutsList?.size!! -1){
+                    workoutsList!![currentWorkoutPosition].setIsSelected(false)
+                    workoutsList!![currentWorkoutPosition].setIsCompleted(true)
+                    workoutAdapter!!.notifyDataSetChanged()
                     setUpRestView()
                 }else{
-                    Toast.makeText(
-                        this@WorkoutActivity,
-                        "Congratulations! You've completed this 7' Workout!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    finish()
+                    val intent = Intent(
+                        this@WorkoutActivity, WorkoutFinished::class.java
+                    )
+                    startActivity(intent)
                 }
             }
 
