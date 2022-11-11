@@ -9,6 +9,7 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.nachocampos.trainathome.databinding.ActivityWorkoutBinding
 import java.util.*
 import kotlin.collections.ArrayList
@@ -27,6 +28,8 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private var textToSpeech: TextToSpeech? = null
     private var soundPlayer: MediaPlayer? = null
+
+    private var workoutAdapter: WorkoutStatusAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +54,15 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         setUpRestView()
+        setUpWorkoutStatusRecyclerView()
+    }
+
+    private fun setUpWorkoutStatusRecyclerView(){
+        binding?.rvExerciseStatus?.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+        workoutAdapter = WorkoutStatusAdapter(workoutsList!!)
+        binding?.rvExerciseStatus?.adapter = workoutAdapter
     }
 
     private fun setUpRestView(){
@@ -116,6 +128,8 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
             override fun onFinish() {
                 currentWorkoutPosition++
+                workoutsList!![currentWorkoutPosition].setIsSelected(true)
+                workoutAdapter!!.notifyDataSetChanged()
                 setUpWorkoutView()
             }
 
@@ -133,6 +147,11 @@ class WorkoutActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
 
             override fun onFinish() {
+
+                workoutsList!![currentWorkoutPosition].setIsSelected(false)
+                workoutsList!![currentWorkoutPosition].setIsCompleted(true)
+                workoutAdapter!!.notifyDataSetChanged()
+
                 if(currentWorkoutPosition < workoutsList?.size!! -1){
                     setUpRestView()
                 }else{
